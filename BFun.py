@@ -71,13 +71,24 @@ def toc(a):
 def toc2Str(a):
 	return secondsAgo2Str(toc(a))
 
+def now2Str():
+	aNow = time.localtime()
+	YYYY = '%d'%aNow.tm_year
+	MM = '%02d'%aNow.tm_mon
+	DD = '%02d'%aNow.tm_mday
+	HH = '%02d'%aNow.tm_hour
+	MM = '%02d'%aNow.tm_min
+	SS = '%02d'%round(aNow.tm_sec)
+	return YYYY+'-'+MM+'-'+DD+' '+HH+':'+MM+':'+SS
+
 def omniDecode(someBytes):
 	global globalEncodingList
 	for n in range(len(globalEncodingList)):
 		try:
 			#return someBytes.decode('utf-8')
 			return someBytes.decode(globalEncodingList[n])
-		except:
+		except UnicodeDecodeError as ex:
+			# Couldn't decode so try next codec
 			pass
 	print("Couldn't decode bytes")
 	return '<error>'
@@ -96,29 +107,29 @@ def ezRead(somePath):
 		tempObject = open(somePath,'rb')
 		someBytes = tempObject.read()
 		someString = omniDecode(someBytes)
-	except:
+	except FileNotFoundError as ex:
 		tempObject = open(somePath,'w')
 		someString = ''
 	tempObject.close()
 	return someString
 
 def ezAppend(somePath,someString):
-	# Trys to append to a file. If it can't, it'll write to that file instead.
-	try:
-		tempObject = open(somePath,'a')
-	except:
-		tempObject = open(somePath,'w')
+	# Append to a file. Will create a file if it doesn't exist.
+	tempObject = open(somePath,'a')
 	tempObject.write(someString)
 	tempObject.close()
-	
-def ezLog(someString,ex=None):
+
+def ezLog0(someString,ex=None):
+	timeStr = now2Str() + ': '
+	reStr = timeStr + someString
 	if ex:
-		ex_traceback = ex.__traceback__
-		tb_lines = [ line.rstrip('\n') for line in
-			traceback.format_exception(ex.__class__, ex, ex_traceback)]
-		someString = someString+': '+tb_lines
-	# Appends a string to the log. Prepends time and appends new line as well.
-	ezAppend(PuxGlobal.LOG_PATH,'%0.1f '%time.time()+someString+'\n')
+		tb_lines = traceback.format_exception(ex.__class__, ex, ex.__traceback__)
+		tb_text = ''.join(tb_lines)
+		reStr = reStr + '\n' + tb_text
+	return reStr+'\n'
+
+def ezLog(someString,ex=None):
+	ezAppend(PuxGlobal.LOG_PATH,ezLog0(someString,ex))
 	
 # Opens URL and decodes webpage source.
 def webRead(someURL):
@@ -127,11 +138,13 @@ def webRead(someURL):
 	counter = 0
 	while counter < 10:
 		try:
-			tempR = requests.get(someURL,timeout=10)
+			tempR = requests.get(someURL,timeout=99)
 			return tempR.text
-		except:
+		except requests.exceptions.ConnectTimeout as ex:
+			counter += 1
 			print('Timed out while opening %s. %d times'%(someURL,counter))
-	return '%s did not load'%someURL
+	BFun.ezLog('Timed out trying to open %s (%d tries)'%(someURL,counter))
+	return 'timed out'
 	
 def jSaver(someJSON,somePath):
 	tempBytes = ezEncode(json.dumps(someJSON, skipkeys=True, ensure_ascii=False, sort_keys=True))
