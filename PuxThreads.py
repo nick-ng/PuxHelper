@@ -218,21 +218,24 @@ class TorrentT(threading.Thread):
 
 	def run(self):
 		global globalThreadReport
-		while not PuxGlobal.joinPlease[0]:
-			globalThreadReport['Torrent'] = BFun.tic()
-			self.checkTorrentList()
-			if self.counters['add'] == 0:
-				print('Updating show list')
-				self.addShows()
-			if self.counters['check'] == 0:
-				for show in self.showList:
-					print('Checking torrents of '+show.SHOW_NAME)
-					try:
-						show.checkTorrents()
-					except:
-						print('Something went wrong. Probably Transmission down?')
-						self.counters['add'] = self.counterFreq['add'] - 1
-			self.advanceCounters()
+		try:
+			while not PuxGlobal.joinPlease[0]:
+				globalThreadReport['Torrent'] = BFun.tic()
+				self.checkTorrentList()
+				if self.counters['add'] == 0:
+					print('Updating show list')
+					self.addShows()
+				if self.counters['check'] == 0:
+					for show in self.showList:
+						print('Checking torrents of '+show.SHOW_NAME)
+						try:
+							show.checkTorrents()
+						except:
+							print('Something went wrong. Probably Transmission down?')
+							self.counters['add'] = self.counterFreq['add'] - 1
+				self.advanceCounters()
+		except:
+			BFun.ezLog('Torrent thread broke',ex)
 		# If it gets to here, it means we're trying to join.
 		for show in self.showList:
 			# So make sure all data is saved.

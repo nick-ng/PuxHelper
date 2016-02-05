@@ -11,6 +11,7 @@ import json
 import requests
 import hashlib
 import statistics
+import traceback
 
 # Load all character encoding names for OmniDecode later
 if sys.platform == 'linux' or sys.platform == 'linux2':
@@ -110,7 +111,12 @@ def ezAppend(somePath,someString):
 	tempObject.write(someString)
 	tempObject.close()
 	
-def ezLog(someString):
+def ezLog(someString,ex=None):
+	if ex:
+		ex_traceback = ex.__traceback__
+		tb_lines = [ line.rstrip('\n') for line in
+			traceback.format_exception(ex.__class__, ex, ex_traceback)]
+		someString = someString+': '+tb_lines
 	# Appends a string to the log. Prepends time and appends new line as well.
 	ezAppend(PuxGlobal.LOG_PATH,'%0.1f '%time.time()+someString+'\n')
 	
