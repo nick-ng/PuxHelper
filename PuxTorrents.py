@@ -7,7 +7,7 @@ import time
 try:
 	# Web adapters are private
 	import NoPubWebAdapters
-except:
+except ImportError as ex:
 	print('Couldn\'t import web adapters. Script may not function properly.')
 	NoPubWebAdapters = None
 # Functions that deal with the BitTorrent protocol.
@@ -28,21 +28,26 @@ def connectTransmission():
 	# Returns a transmission session object
 	try:
 		return transmissionrpc.Client()
-	except:
-		print('Starting Transmission')
-		# Start transmission and return control to terminal
-		os.system('transmission-gtk &')
-		print('Transmission Starting')
-		unConnected = 1
-		# Try to connect to transmission until successful.
-		while unConnected > 0:
-			try:
-				return transmissionrpc.Client()
-				#unConnected = 0
-			except:
-				print('Failed to connect to Transmission. (%d times)'%unConnected)
-				unConnected = unConnected + 1
-				time.sleep(1) # Sleep 1 second for sanity.
+	except transmissionrpc.error.TransmissionError as ex:
+		if 'connection refused' in str(ex).lower():
+			print('Starting Transmission')
+			# Start transmission and return control to terminal
+			os.system('transmission-gtk &')
+			print('Transmission Starting')
+			unConnected = 1
+			# Try to connect to transmission until successful.
+			while unConnected > 0:
+				try:
+					return transmissionrpc.Client()
+					#unConnected = 0
+				except transmissionrpc.error.TransmissionError as ex:
+					print('Failed to connect to Transmission. (%d times)'%unConnected)
+					unConnected = unConnected + 1
+					time.sleep(1) # Sleep 1 second for sanity.
+		else:
+			BFun.ezLog('Unexpected error when connecting to transmission. Search for 1435813',ex)
+	except Exception as ex:
+		BFun.ezLog('Unexpected error when connecting to transmission. Search for 1435813a',ex)
 				
 def addTorrentURL(someSession,torrentDict):
 	# Add torrent by URL

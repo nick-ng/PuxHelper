@@ -74,8 +74,11 @@ class PuxBullet:
 			try:
 				r = requests.request(method, url, data=postdata, params=params, headers=headers, files=files, auth=HTTPBasicAuth(self.ACCESS_TOKEN, ""),timeout=99)
 				status_codes.append(r.status_code)
-			except:
+			except requests.exceptions.ConnectTimeout as ex:
+				print('PushBullet request timedout.')
 				status_codes.append(1)
+			except Exception as ex:
+				BFun.ezLog('Error when making pushbullet request:',ex)
 			if status_codes[-1] == 403:
 				self.getAccessToken()
 			if len(status_codes) > 100:
@@ -111,8 +114,8 @@ class PuxBullet:
 				# use try except since we don't want messages going to None if we can't get the iden
 				try:
 					self.browserIdens.append(device['iden'])
-				except:
-					pass
+				except Exception as ex:
+					BFun.ezLog('Error when getting browser idens in PuxBulletf. Search for 1751686',ex)
 	
 	def createThisDevice(self):
 		devices = self.getDevices()
@@ -196,6 +199,6 @@ class PuxBullet:
 						if pushIden:
 							#self.dismissPush(pushIden)
 							self.deletePush(pushIden)
-				except:
-					print('Message broke command finder: '+pBody)
+				except Exception as ex:
+					BFun.ezLog('Message (%s) broke command finder in PuxBulletf. Search for 2832516'%pBody,ex)
 		return commandList

@@ -140,7 +140,8 @@ class PushBulletT(threading.Thread):
 				arguments = aDict['arguments']
 				try:
 					command = arguments.pop(0)
-				except:
+				except IndexError as ex:
+					print('Argument list was empty')
 					command = ''
 				commandLower = command.lower()
 				if commandLower == 'speak':
@@ -230,11 +231,12 @@ class TorrentT(threading.Thread):
 						print('Checking torrents of '+show.SHOW_NAME)
 						try:
 							show.checkTorrents()
-						except:
-							print('Something went wrong. Probably Transmission down?')
+						except Exception as ex:
+							BFun.ezLog('Error when calling show.checkTorrents() in PuxThreads.TorrentT.run()',ex)
+							print('Error when calling show.checkTorrents() in PuxThreads.TorrentT.run()')
 							self.counters['add'] = self.counterFreq['add'] - 1
 				self.advanceCounters()
-		except:
+		except Exception as ex:
 			BFun.ezLog('Torrent thread broke',ex)
 		# If it gets to here, it means we're trying to join.
 		for show in self.showList:

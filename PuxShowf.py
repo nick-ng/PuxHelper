@@ -53,7 +53,12 @@ class PuxShow:
 		self.updateTorrentList()
 		try:
 			latestEpOverride = int(lineParts[6])
-		except:
+		except IndexError as ex:
+			# Option not present. Start from episode 0
+			latestEpOverride = 0
+		except ValueError as ex:
+			# Option present but incorrect. Log and start from episode 0
+			BFun.ezLog('%s entry in torrentlist.txt is incorrect. Override value should be integer'%self.SHOW_NAME)
 			latestEpOverride = 0
 		self.latestEpisode = -1
 		self.findLatestEpisode(latestEpOverride)
@@ -100,7 +105,7 @@ class PuxShow:
 		try:
 			# Try to get file list from show folder on file server.
 			fileList = os.listdir(self.SHOW_PATH)
-		except:
+		except FileNotFoundError as ex:
 			# Make the directory
 			os.mkdir(self.SHOW_PATH)
 			fileList = []
@@ -120,11 +125,14 @@ class PuxShow:
 			dataFile = open(self.LATEST_DATA_PATH,'r')
 			dataLatest = int(dataFile.read())
 			dataFile.close()
-		except:
-			# Couldn't read file or file didn't contain an integer
+		except FileNotFoundError as ex:
+			# Couldn't read file
 			dataFile = open(self.LATEST_DATA_PATH,'w')
 			dataFile.write('-1') # Write -1
 			dataFile.close()
+			dataLatest = -1
+		except ValueError as ex:
+			# Didn't contain an integer
 			dataLatest = -1
 		if dataLatest < directoryLatest:
 			dataFile = open(self.LATEST_DATA_PATH,'w')
@@ -171,9 +179,14 @@ class PuxShow:
 						fileLikeObject = urllib.request.urlopen(url, None, 30)
 						gotTorrent = True
 						break
-					except:
-						torrentRetrys += 1
-						print('Timed out. Trying again. %d'%torrentRetrys)
+					except urllib.error.URLError as ex:
+						if 'error timed out' in str(ex).lower():
+							torrentRetrys += 1
+							print('Timed out. Trying again. %d'%torrentRetrys)
+						else:
+							BFun.ezLog('Error when retrieving .torrent file. Search for 9217568',ex)
+					except Exception as ex:
+						BFun.ezLog('Error when retrieving .torrent file. Search for 3195897',ex)
 				if gotTorrent:
 					# Write data to .torrent file. 
 					localURI = self.DATA_PATH+'/lastTorrent.torrent'
@@ -186,7 +199,8 @@ class PuxShow:
 						torrent = self.transmissionSession.add_torrent(localURI,paused=True)
 						hashString = torrent.hashString
 						torrentContents = self.transmissionSession.get_torrent(hashString).files()
-					except:
+					except Exception as ex:
+						BFun.ezLog('Error when sending .torrent file to transmission. Search for 4523861',ex)
 						# Add bogus torrent to torrentList with URL and Completed.
 						# Skip the URL now but don't mark it so we can try it later.
 						torrentDict = {'URL': 'a', 'completed': 1, 'epNum': -epNum, 'hashString': 'brokenURL', 'wantedFileIDs': [], 'comment': ['ep %d'%epNum,'brokenURL',url]}
@@ -318,7 +332,7 @@ class PuxShow:
 					try:
 						# Try to get file list from show folder on file server.
 						temp = os.listdir(self.SHOW_PATH)
-					except:
+					except FileNotFoundError as ex:
 						# Make the directory
 						os.mkdir(self.SHOW_PATH)
 					for n in torrentDict['wantedFileIDs']:
