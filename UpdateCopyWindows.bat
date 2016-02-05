@@ -1,0 +1,2 @@
+python NoPubUpdateCopyWindows.py
+pause
