@@ -76,10 +76,10 @@ def now2Str():
 	YYYY = '%d'%aNow.tm_year
 	MM = '%02d'%aNow.tm_mon
 	DD = '%02d'%aNow.tm_mday
-	HH = '%02d'%aNow.tm_hour
-	MM = '%02d'%aNow.tm_min
-	SS = '%02d'%round(aNow.tm_sec)
-	return YYYY+'-'+MM+'-'+DD+' '+HH+':'+MM+':'+SS
+	hh = '%02d'%aNow.tm_hour
+	mm = '%02d'%aNow.tm_min
+	ss = '%02d'%round(aNow.tm_sec)
+	return YYYY+'-'+MM+'-'+DD+' '+hh+':'+mm+':'+ss
 
 def omniDecode(someBytes):
 	global globalEncodingList
