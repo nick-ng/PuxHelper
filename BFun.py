@@ -132,18 +132,18 @@ def ezLog(someString,ex=None):
 	ezAppend(PuxGlobal.LOG_PATH,ezLog0(someString,ex))
 	
 # Opens URL and decodes webpage source.
-def webRead(someURL):
+def webRead(someURL,timeout=19,retrys=3):
 	#temp = urllib.request.urlopen(someURL)
 	#return omniDecode(temp.read())
 	counter = 0
-	while counter < 10:
+	while counter < retrys:
 		try:
-			tempR = requests.get(someURL,timeout=99)
+			tempR = requests.get(someURL,timeout=timeout)
 			return tempR.text
 		except requests.exceptions.ConnectTimeout as ex:
 			counter += 1
 			print('Timed out while opening %s. %d times'%(someURL,counter))
-	BFun.ezLog('Timed out trying to open %s (%d tries)'%(someURL,counter))
+	ezLog('Timed out trying to open %s (%d tries)'%(someURL,retrys))
 	return 'timed out'
 	
 def jSaver(someJSON,somePath):
