@@ -17,3 +17,4 @@ globalRecentCompleteTorrents = [] # List of dictionaries
 globalCurrentTorrentsProgress = {} # Dictionary of list of dictionaries
 joinPlease = [False] # A list that contains one boolean value
 joinStatus = {} # A dictionary of {'<module name>':joinStatus (boolean)}
+torretSpeedResetTime = [-1] # A list that contains the time transmission's alt_speed_down should be reset. -1 if it's already reset.

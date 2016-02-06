@@ -72,7 +72,7 @@ class PuxBullet:
 		while status_codes[-1] != 200:
 			timer1 = BFun.tic()
 			try:
-				r = requests.request(method, url, data=postdata, params=params, headers=headers, files=files, auth=HTTPBasicAuth(self.ACCESS_TOKEN, ""),timeout=99)
+				r = requests.request(method, url, data=postdata, params=params, headers=headers, files=files, auth=HTTPBasicAuth(self.ACCESS_TOKEN, ""),timeout=30)
 				status_codes.append(r.status_code)
 			except requests.exceptions.ConnectTimeout as ex:
 				print('PushBullet request timedout.')

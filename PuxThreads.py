@@ -10,6 +10,7 @@ import threading
 import random
 import os
 import shutil
+import transmissionrpc
 
 globalPBullet = PuxBullet(sendOnly=False)
 globalThreadReport = {}
@@ -62,6 +63,22 @@ class PushBulletT(threading.Thread):
 					if (len(body) > 0) and (len(currentBody) > 0):
 						body = body+'\n'
 					body = body+currentBody
+			if 'fast' in allArguments:
+				body = 'fast did nothing.'
+				# Check how long to speed up for. In hours+17 seconds.
+				try:
+					hours = int(arguments[-1])
+				except ValueError as ex:
+					hours = 1
+				seconds = hours*3617
+				PuxGlobal.torretSpeedResetTime[0] = time.time() +  seconds
+				try:
+					tempClient = transmissionrpc.Client()
+					tempClient.set_session(None,alt_speed_down=99999) # Fast enough probably.
+					body = 'Set high download speed for %0.0f hours'%hours
+				except transmissionrpc.error.TransmissionError as ex:
+					# Transmission not running?
+					body = 'Couldn\'t connect to Transmission'
 		else:
 			if len(completeBody) > 0:
 				body = completeBody
@@ -69,7 +86,7 @@ class PushBulletT(threading.Thread):
 				body = currentBody
 		# If body is still empty after everything, add a message
 		if len(body) == 0:
-			body = 'No torrents to report.'
+			body = 'No torrents to report or invalid command.'
 		title = None
 		self.pBullet.sendNote(title,body,sender)
 	
@@ -216,6 +233,22 @@ class TorrentT(threading.Thread):
 		if self.previousTorrentListHash != currentHash:
 			self.previousTorrentListHash = currentHash
 			self.counters['add'] = 0
+
+	def slowAltDown(self):
+		# Slow transmission's alt. download speed.
+		normalAltSpeed = 6
+		alwaysResetTime = 3
+		if PuxGlobal.torretSpeedResetTime[0] > 0: # If it's -1, don't do anything.
+			# if after the reset time, reset the speed.
+			# if it's 3 am, reset time anyway.
+			if (time.time() > PuxGlobal.torretSpeedResetTime[0]) or (alwaysResetTime == time.localtime().tm_hour):
+				try:
+					tempClient = transmissionrpc.Client()
+					tempClient.set_session(None,alt_speed_down=normalAltSpeed) # Fast enough probably.
+					PuxGlobal.torretSpeedResetTime[0] = -1
+				except transmissionrpc.error.TransmissionError as ex:
+					# Transmission not running? Sleep a bit before retrying.
+					time.sleep(3)
 
 	def run(self):
 		global globalThreadReport
