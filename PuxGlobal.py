@@ -9,8 +9,10 @@ SERVER_PATH = TILDA+'/Mount/fileServer/PUBLIC'
 CONFIG_PATH = SERVER_PATH+'/Nick/PythonData/Configs'
 DATA_PATH = SERVER_PATH+'/Nick/PythonData/Data'
 LOG_PATH = DATA_PATH+'/!PuxHelper_log.txt'
+LOG_PATH2 = DATA_PATH+'/!PuxHelper_log_exLocal.txt'
 UPGRADE_PATH = SERVER_PATH+'/Nick/PythonData/Upgrades/PuxHelper'
 LOCAL_PATH = os.environ['HOME']+'/Mount/tempDrive'
+LOCAL_LOG_PATH = LOCAL_PATH + '/!PuxHelper_localLog.txt'
 
 # Global variables and their types
 globalRecentCompleteTorrents = [] # List of dictionaries

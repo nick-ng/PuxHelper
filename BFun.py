@@ -129,7 +129,28 @@ def ezLog0(someString,ex=None):
 	return reStr+'\n'
 
 def ezLog(someString,ex=None):
-	ezAppend(PuxGlobal.LOG_PATH,ezLog0(someString,ex))
+	# Log paths:
+	# PuxGlobal.LOG_PATH		- Primary log file on server.
+	# PuxGlobal.LOCAL_LOG_PATH	- Log file on local. Only used if server isn't accessible.
+	# PuxGlobal.LOG_PATH2		- Server's copy of local log file
+	canLogToServer = False # Safety first?
+	# Check if we can access file server.
+	try:
+		logObject = open(PuxGlobal.LOG_PATH,'a')
+		canLogToServer = True
+	except Exception as ex2:
+		# If can't access file server, log error that prevent access. Actual error is logged later.
+		logObject = open(PuxGlobal.LOCAL_LOG_PATH,'a')
+		logObject.write(ezLog0('Couldn\'t access file server. ',ex2))
+		canLogToServer = False
+	if canLogToServer:
+		# If you can access the server, 'copy' the local log to the server.
+		copiedLog = open(PuxGlobal.LOG_PATH2,'w') # This file is only opened here.
+		localLogText = ezRead(PuxGlobal.LOCAL_LOG_PATH) # This file won't be opened yet.
+		copiedLog.write(localLogText)
+		copiedLog.close()
+	logObject.write(ezLog0(someString,ex))
+	logObject.close()
 	
 # Opens URL and decodes webpage source.
 def webRead(someURL,timeout=19,retrys=3):
