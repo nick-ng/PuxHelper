@@ -37,9 +37,8 @@ class PuxShow:
 		self.DOWNLOAD_PATH = self.LOCAL_PATH+'/torrentDL'
 		self.transmissionSession = PuxTorrents.connectTransmission()
 		# Decode torrentLine
-		# * Show Name*Search URL*File Extension*Parent Directory*Max Size (MB)*Min Size (kB)*episodeOverride
-		# 0              1                    2    3            4   5   6
-		# Come Home Love*http://www.btbbt.cc/*rmvb*!TV, Chinese*500*500*950
+		# * Show Name*Show URL*File Extension*Parent Directory*Max Size (MB)*Min Size (kB)*episodeOverride
+		# 0           1        2              3                4             5             6
 		lineParts = torrentLine.split('*')
 		self.SHOW_NAME = lineParts[0]
 		self.SHOW_URL = lineParts[1]
