@@ -142,7 +142,13 @@ def webRead(someURL,timeout=19,retrys=3):
 			return tempR.text
 		except requests.exceptions.ConnectTimeout as ex:
 			counter += 1
-			print('Timed out while opening %s. %d times'%(someURL,counter))
+			print('Connect Timed out while opening %s. %d times'%(someURL,counter))
+		except requests.exceptions.ReadTimeout as ex:
+			counter += 1
+			print('Read Timed out while opening %s. %d times'%(someURL,counter))
+		except requests.exceptions.ConnectionError as ex:
+			counter += 1
+			print('Connection error while opening %s. %d times'%(someURL,counter))
 	ezLog('Timed out trying to open %s (%d tries)'%(someURL,retrys))
 	return 'timed out'
 	
